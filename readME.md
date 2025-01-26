@@ -135,3 +135,21 @@
 | `_id` | `string` |**Required**.|
 | `type` | `string` |**Required**.|
 | `amount` | `string` |**Required**.|
+
+## 資料架構
+
+```bash
+accoint_api_node/
+├── Controller/    # 控制器
+├── Model/         # 模型
+├── Router/        # 路由
+├── jwt.js         # JWT 驗證
+├── server.js      # 伺服器入口
+├── package.json   # 專案設定
+└── .gitignore     # Git 忽略清單
+```
+##  相依套件
+- Express
+- Mongoose
+- jsonwebtoken
+- dotenv

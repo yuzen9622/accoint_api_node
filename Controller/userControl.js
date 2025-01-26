@@ -78,23 +78,23 @@ const loginUser = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     let { name, email, password } = req.body;
-    let user = await UserModel.findOne({ email });
+    let user = await UserModel.findOne({ email: email });
     if (user) return res.status(401).json({ error: "電子郵件已被使用" });
-    user = new UserModel({
+    const newUser = new UserModel({
       username: name,
       email,
       password,
     });
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
-    await user.save();
+    newUser.password = await bcrypt.hash(newUser.password, salt);
+    await newUser.save();
     const setting = await registerSetting(user._id);
-    const token = createRefreshToken(user._id);
+    const token = createRefreshToken(newUser._id);
     if (!setting) return res.status(500).json({ error: "設定失敗" });
     return res.status(200).json({
-      _id: user._id,
-      name: user.username,
-      email: user.email,
+      _id: newUser._id,
+      name: newUser.username,
+      email: newUser.email,
       token,
     });
   } catch (error) {
