@@ -6,6 +6,7 @@ const categorySchema = new Schema(
     userId: { type: String, default: null },
     categoriesType: String,
     source: String,
+    isDeleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

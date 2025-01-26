@@ -1,5 +1,5 @@
-const { query } = require("express");
 const RecordModel = require("../Model/recordModel");
+const AccountModel = require("../Model/accountModel");
 const { validUserToken } = require("../jwt");
 
 const addRecord = async (req, res) => {
@@ -16,6 +16,7 @@ const addRecord = async (req, res) => {
       description,
       date,
       source,
+      toAccountId,
     } = req.body;
 
     if (valid.ok) {
@@ -30,12 +31,67 @@ const addRecord = async (req, res) => {
       ) {
         return res.status(400).json({ error: "請確認必填欄位都有資料" });
       }
-      if (_id) {
-        await RecordModel.updateOne(
-          { _id },
-          { categoryId, accountId, amount, description, source, date }
-        );
-        return res.status(200).json({ ok: valid.ok });
+
+      if (_id && source !== "change") {
+        const record = await RecordModel.findById(_id);
+        const oldAccount = await AccountModel.findById({
+          _id: record.accountId,
+        });
+        const newAccount = await AccountModel.findById({ _id: accountId });
+        if (source === "income") {
+          oldAccount.amount -= parseFloat(record.amount);
+          await oldAccount.save();
+          newAccount.amount = oldAccount.amount + parseFloat(amount);
+        } else {
+          oldAccount.amount += parseFloat(record.amount);
+          await oldAccount.save();
+          newAccount.amount = oldAccount.amount - parseFloat(amount);
+        }
+        console.log(oldAccount.amount, newAccount.amount);
+        await newAccount.save();
+        await record.updateOne({
+          userId,
+          categoryId,
+          accountId,
+          amount,
+          description,
+          date,
+          toAccountId,
+          source,
+        });
+        return res.status(200).json({ ok: valid.ok, message: "修改成功" });
+      }
+
+      if (_id && source === "change") {
+        const record = await RecordModel.findById({ _id });
+        const oldAccount = await AccountModel.findById({
+          _id: record.accountId,
+        });
+        const oldToAccount = await AccountModel.findById({
+          _id: record.toAccountId,
+        });
+
+        oldAccount.amount += parseFloat(record.amount);
+        oldToAccount.amount -= parseFloat(record.amount);
+        await oldAccount.save();
+        await oldToAccount.save();
+        const newAccount = await AccountModel.findById({ _id: accountId });
+        const newToAccount = await AccountModel.findById({ _id: toAccountId });
+        newAccount.amount -= parseFloat(amount);
+        newToAccount.amount += parseFloat(amount);
+        await newAccount.save();
+        await newToAccount.save();
+        await record.updateOne({
+          userId,
+          categoryId,
+          accountId,
+          amount,
+          description,
+          date,
+          toAccountId,
+          source,
+        });
+        return res.status(200).json({ ok: valid.ok, message: "修改成功" });
       }
 
       const record = new RecordModel({
@@ -45,14 +101,31 @@ const addRecord = async (req, res) => {
         amount,
         description,
         source,
+        toAccountId,
         date,
       });
 
       await record.save();
       if (record) {
-        return res
-          .status(200)
-          .json({ ok: valid.ok, record, newToken: valid?.newToken });
+        const account = await AccountModel.findById({ _id: accountId });
+        if (source === "income") {
+          account.amount = account.amount + parseFloat(amount);
+        } else {
+          account.amount = parseFloat(account.amount) - parseFloat(amount);
+          if (source === "change") {
+            const toAccount = await AccountModel.findById({ _id: toAccountId });
+            toAccount.amount = toAccount.amount + parseFloat(amount);
+            await toAccount.save();
+          }
+        }
+        await account.save();
+
+        return res.status(200).json({
+          ok: valid.ok,
+          record,
+          newToken: valid?.newToken,
+          message: "新增成功",
+        });
       } else {
         return res.status(200).json({ error: "新增失敗" });
       }
@@ -130,7 +203,25 @@ const deleteRecord = async (req, res) => {
   try {
     if (!recordId) return res.status(400).json({ error: "no id" });
     if (valid.ok) {
-      let record = await RecordModel.deleteOne({ _id: recordId });
+      let record = await RecordModel.findByIdAndDelete({
+        _id: recordId,
+      });
+
+      const account = await AccountModel.findById({ _id: record.accountId });
+      if (record.source === "income") {
+        account.amount -= parseFloat(record.amount);
+      } else {
+        account.amount += parseFloat(record.amount);
+      }
+      if (record.source === "change") {
+        const toAccount = await AccountModel.findById({
+          _id: record.toAccountId,
+        });
+        toAccount.amount -= parseFloat(record.amount);
+        await toAccount.save();
+      }
+
+      await account.save();
 
       return res.status(200).json({ ok: valid.ok });
     }

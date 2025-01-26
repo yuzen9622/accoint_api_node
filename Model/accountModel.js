@@ -5,6 +5,9 @@ const accountSchema = new Schema(
   {
     userId: { type: String, default: null },
     accountsType: String,
+    amount: { type: Number, default: 0 },
+    initalAmount: { type: Number, default: 0 },
+    toAccountId: { type: String, default: null },
   },
   {
     timestamps: true,

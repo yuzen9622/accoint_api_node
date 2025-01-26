@@ -7,10 +7,7 @@ const getCategory = async (req, res) => {
     const valid = validUserToken(token);
     if (valid.ok) {
       const userId = valid._id;
-      const categories = await CategoryModel.find({
-        $or: [{ userId, userId: null }],
-      });
-
+      const categories = await CategoryModel.find({ userId });
       return res
         .status(200)
         .json({ ok: valid.ok, categories, newToken: valid?.newToken });
@@ -28,20 +25,33 @@ const addCategory = async (req, res) => {
     const { userId, type, source } = req.body;
     const valid = validUserToken(token);
     if (valid.ok) {
-      let category = await CategoryModel.findOne({
+      const category = await CategoryModel.findOne({
         userId,
         categoriesType: type,
       });
-      if (category) return res.status(400).json({ error: "類別已存在" });
+      if (category) {
+        if (category.isDeleted) {
+          category.isDeleted = false;
+          await category.save();
+          return res
+            .status(200)
+            .json({ ok: valid.ok, category, newToken: valid?.newToken });
+        } else {
+          return res.status(400).json({ ok: valid.ok, error: "類別已存在" });
+        }
+      }
 
-      category = new CategoryModel({
+      const newCategory = new CategoryModel({
         userId,
         categoriesType: type,
+        source,
       });
-      await category.save();
-      return res
-        .status(200)
-        .json({ ok: valid.ok, category, newToken: valid?.newToken });
+      await newCategory.save();
+      return res.status(200).json({
+        ok: valid.ok,
+        category: newCategory,
+        newToken: valid?.newToken,
+      });
     } else {
       return res.status(400).json({ ok: valid.ok, error: valid.error });
     }
@@ -50,4 +60,23 @@ const addCategory = async (req, res) => {
     return res.status(500).json({ error: error });
   }
 };
-module.exports = { getCategory, addCategory };
+
+const deleteCategory = async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    if (valid.ok) {
+      const category = await CategoryModel.findById({ _id });
+      category.isDeleted = true;
+      await category.save();
+      return res.status(200).json({ ok: valid.ok, message: "刪除成功" });
+    } else {
+      return res.status(400).json({ ok: valid.ok, error: "憑證錯誤" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "error" });
+  }
+};
+
+module.exports = { getCategory, addCategory, deleteCategory };

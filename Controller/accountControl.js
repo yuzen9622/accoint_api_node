@@ -28,7 +28,7 @@ const addAccount = async (req, res) => {
   try {
     const token = req.headers.authorization;
     const valid = validUserToken(token);
-    const { userId, type } = req.body;
+    const { userId, type, amount } = req.body;
 
     if (valid.ok) {
       const accounts = await AccountModel.findOne({
@@ -39,6 +39,7 @@ const addAccount = async (req, res) => {
       let account = new AccountModel({
         userId: userId,
         accountsType: type,
+        amount: amount || 0,
       });
       await account.save();
 
@@ -53,4 +54,28 @@ const addAccount = async (req, res) => {
   }
 };
 
-module.exports = { getAccount, addAccount };
+const updateAccount = async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    const { _id, amount, type } = req.body;
+
+    if (valid.ok) {
+      let oldAccount = await AccountModel.findOne({ accountsType: type });
+
+      if (oldAccount && oldAccount?._id.toString() !== _id) {
+        return res.status(400).json({ error: "名稱已被使用" });
+      }
+      const account = await AccountModel.findById({ _id });
+      account.initalAmount = parseFloat(amount);
+      await account.save();
+      return res.status(200).json({ ok: valid.ok, account });
+    } else {
+      return res.status(400).json({ ok: valid.ok, error: valid.error });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = { getAccount, addAccount, updateAccount };

@@ -8,6 +8,7 @@ const recordSchema = new Schema(
     amount: { type: Number },
     description: String,
     source: String,
+    toAccountId: String,
     date: Date,
   },
   {
