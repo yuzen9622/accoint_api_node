@@ -6,7 +6,7 @@
 
 #### user
 
-```http
+```https
   POST /users/login
 ```
 
@@ -16,7 +16,7 @@
 | `password` | `string` | **Required**. |
 
 
-```http
+```https
   POST /users/register
 ```
 
@@ -26,7 +26,7 @@
 | `email` | `string` | **Required**.|
 | `password` | `string` | **Required**. |
 
-```http
+```https
   GET /users/token
 ```
 
@@ -36,7 +36,7 @@
 
 #### record
 
-```http
+```https
   POST /records/add
 ```
 | Parameter | Type     | Description                |
@@ -52,7 +52,7 @@
 | `toAccountId` | `string` | change account to account|
 
 
-```http
+```https
   GET /records/
 ```
 | Parameter | Type     | Description                |
@@ -64,7 +64,7 @@
 | `start` | `string` |query start time. **End will be Required**|
 | `end` | `string` | query start to end time|
 
-```http
+```https
   GET /records/delete/:recordId
 ```
 
@@ -76,7 +76,7 @@
 
 #### category
 
-```http
+```https
   GET /categories
 ```
 
@@ -85,7 +85,7 @@
 | :-------- | :------- | :------------------------- |
 | `token` | `string` |**Required**.|
 
-```http
+```https
   GET /categories/delete/:_id
 ```
 
@@ -94,7 +94,7 @@
 | `token` | `string` |**Required**.|
 | `:id` | `string` | delete record id|
 
-```http
+```https
   POST /categories/add/
 ```
 | Parameter | Type     | Description                |
@@ -107,14 +107,14 @@
 
 #### account
 
-```http
+```https
   GET /accounts/
 ```
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
 | `token` | `string` |**Required**.|
 
-```http
+```https
   POST /accounts/add/
 ```
 
@@ -125,7 +125,7 @@
 | `type` | `string` |**Required**.|
 | `amount` | `number` |**Required**.|
 
-```http
+```https
   POST /accounts/update/
 ```
 
