@@ -30,18 +30,25 @@
   GET /users/token
 ```
 
-| Parameter | Type     | Description                |
+#### Request Headers:
+| Header | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` | **Required**.|
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
 
 #### record
 
 ```https
   POST /records/add
 ```
+#### Request Headers:
+| Header | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
+
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` | **Required**.|
 | `_id` | `string` | update record id|
 | `userId` | `string` | **Required**.|
 | `categoryId` | `string` | **Required**.|
@@ -52,17 +59,24 @@
 | `toAccountId` | `string` | change account to account|
 
 
+
 ```https
-  GET /records/
+  GET /records/?year&month&date&start&end
 ```
+#### Request Headers:
+| Header | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
+
+#### Query Parameters:
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` |**Required**.|
-| `year` | `string` | query year|
-| `month` | `string` | query month|
-| `date` | `string` |query date|
-| `start` | `string` |query start time. **End will be Required**|
-| `end` | `string` | query start to end time|
+| `year` | `string` | 查詢的年份（可選）。|
+| `month` | `string` | 	查詢的月份（可選）。|
+| `date` | `string` |查詢的日期（可選）。|
+| `start` | `string` |	查詢的開始時間，需搭配 end 使用。|
+| `end` | `string` |	查詢的結束時間（需搭配 start 使用）。|
 
 ```https
   GET /records/delete/:recordId
@@ -89,17 +103,28 @@
   GET /categories/delete/:_id
 ```
 
+#### Request Headers:
+| Header | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
+
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` |**Required**.|
 | `:id` | `string` | delete record id|
 
 ```https
   POST /categories/add/
 ```
+
+#### Request Headers:
+| Header | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
+
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` |**Required**.|
 | `userId` | `string` |**Required**.|
 | `type` | `string` |**Required**.|
 | `source` | `string` |**Required**.|
@@ -110,17 +135,24 @@
 ```https
   GET /accounts/
 ```
-| Parameter | Type     | Description                |
+#### Request Headers:
+| Header | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` |**Required**.|
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
 
 ```https
   POST /accounts/add/
 ```
+#### Request Headers:
+| Header | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `Authorization` | `string` |**Required**. Bearer Token用於授權。|
+
+
 
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `token` | `string` |**Required**.|
 | `userId` | `string` |**Required**.|
 | `type` | `string` |**Required**.|
 | `amount` | `number` |**Required**.|

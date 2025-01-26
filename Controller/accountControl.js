@@ -59,7 +59,8 @@ const updateAccount = async (req, res) => {
     const token = req.headers.authorization;
     const valid = validUserToken(token);
     const { _id, amount, type } = req.body;
-
+    if (!amount || !type)
+      return res.status(400).json({ error: "請輸入必填欄位" });
     if (valid.ok) {
       let oldAccount = await AccountModel.findOne({ accountsType: type });
 
