@@ -67,14 +67,22 @@ const addRecord = async (req, res) => {
         const oldAccount = await AccountModel.findById({
           _id: record.accountId,
         });
-        const oldToAccount = await AccountModel.findById({
-          _id: record.toAccountId,
-        });
 
-        oldAccount.amount += parseFloat(record.amount);
-        oldToAccount.amount -= parseFloat(record.amount);
+        if (record.source === "income") {
+          oldAccount.amount -= parseFloat(record.amount);
+        } else {
+          oldAccount.amount += parseFloat(record.amount);
+        }
+        if (record.toAccountId !== "") {
+          const oldToAccount = await AccountModel.findById({
+            _id: record.toAccountId,
+          });
+          oldToAccount.amount -= parseFloat(record.amount);
+          await oldToAccount.save();
+        }
+
         await oldAccount.save();
-        await oldToAccount.save();
+
         const newAccount = await AccountModel.findById({ _id: accountId });
         const newToAccount = await AccountModel.findById({ _id: toAccountId });
         newAccount.amount -= parseFloat(amount);
@@ -133,6 +141,7 @@ const addRecord = async (req, res) => {
       return res.status(400).json({ ok: valid.ok, error: valid.error });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error, error });
   }
 };

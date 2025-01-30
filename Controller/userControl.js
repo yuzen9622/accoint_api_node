@@ -6,7 +6,9 @@ const {
   createRefreshToken,
   validRefreshToken,
   createUserToken,
+  validUserToken,
 } = require("../jwt");
+const RecordModel = require("../Model/recordModel");
 
 const registerSetting = async (_id) => {
   try {
@@ -57,10 +59,16 @@ const registerSetting = async (_id) => {
 const loginUser = async (req, res) => {
   try {
     let { email, password } = req.body;
+
     let user = await UserModel.findOne({ email });
-    if (!user) return res.status(400).json({ error: "電子郵件不正確" });
+    if (!user) {
+      return res.status(400).json({ error: "帳號或密碼錯誤" });
+    }
     let Validpassword = await bcrypt.compare(password, user.password);
-    if (!Validpassword) return res.status(400).json({ error: "密碼不正確" });
+    if (!Validpassword) {
+      return res.status(400).json({ error: "帳號或密碼錯誤" });
+    }
+
     const token = createRefreshToken(user._id);
     if (user && Validpassword) {
       return res.status(200).json({
@@ -71,6 +79,7 @@ const loginUser = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error });
   }
 };
@@ -88,7 +97,7 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     newUser.password = await bcrypt.hash(newUser.password, salt);
     await newUser.save();
-    const setting = await registerSetting(user._id);
+    const setting = await registerSetting(newUser._id);
     const token = createRefreshToken(newUser._id);
     if (!setting) return res.status(500).json({ error: "設定失敗" });
     return res.status(200).json({
@@ -101,6 +110,58 @@ const registerUser = async (req, res) => {
     console.log(error);
     return res.status(500).json({ error: error });
   }
+};
+
+const updateUser = async (req, res) => {
+  const { _id, name, email, password } = req.body;
+  try {
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    if (valid.ok) {
+      const user = await UserModel.findById({ _id });
+      user.username = name;
+      user.email = email;
+
+      if (password !== "") {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+      }
+      await user.save();
+      const token = createRefreshToken(user._id);
+      return res.status(200).json({
+        ok: valid.ok,
+        user: {
+          _id: user._id,
+          name: user.username,
+          email: user.email,
+          token,
+        },
+      });
+    } else {
+      return res.status(400).json({ ok: valid.ok, error: "憑證錯誤" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "伺服器錯誤" });
+  }
+};
+
+const destoryUser = async (req, res) => {
+  const { _id } = req.body;
+
+  try {
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    if (valid.ok && valid._id === _id) {
+      const deleteUser = await UserModel.findByIdAndDelete({ _id });
+      if (deleteUser) {
+        await AccountModel.deleteMany({ userId: _id });
+        await RecordModel.deleteMany({ userId: _id });
+        await CategoryModel.deleteMany({ userId: _id });
+        return res.status(200).json({ ok: valid.ok, message: "刪除成功" });
+      }
+    }
+  } catch (error) {}
 };
 
 const getToken = async (req, res) => {
@@ -120,4 +181,11 @@ const getToken = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, registerUser, getToken, registerSetting };
+module.exports = {
+  loginUser,
+  registerUser,
+  getToken,
+  registerSetting,
+  updateUser,
+  destoryUser,
+};

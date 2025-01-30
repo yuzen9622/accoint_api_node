@@ -81,4 +81,27 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-module.exports = { getCategory, addCategory, deleteCategory };
+const updateCategory = async (req, res) => {
+  try {
+    const { _id, type, source } = req.body;
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    if (valid.ok) {
+      const category = await CategoryModel.findById({ _id });
+      category.categoriesType = type;
+      await category.save();
+      if (category) {
+        return res.status(200).json({ ok: valid.ok, category });
+      } else {
+        return res.status(400).json({ ok: false, error: "類別不存在" });
+      }
+    } else {
+      return res.status(400).json({ ok: valid.ok, error: "憑證錯誤" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "error" });
+  }
+};
+
+module.exports = { getCategory, addCategory, deleteCategory, updateCategory };

@@ -1,4 +1,5 @@
 const AccountModel = require("../Model/accountModel");
+const RecordModel = require("../Model/recordModel");
 const { validUserToken } = require("../jwt");
 
 const getAccount = async (req, res) => {
@@ -54,6 +55,24 @@ const addAccount = async (req, res) => {
   }
 };
 
+const deleteAccount = async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    const { _id } = req.params;
+    if (!_id) return res.status(400).json({ error: "請提供id" });
+    if (valid.ok) {
+      await RecordModel.deleteMany({ accountId: _id });
+      const account = await AccountModel.findByIdAndDelete({ _id });
+      if (account) return res.status(200).json({ ok: valid.ok });
+    } else {
+      return res.status(400).json({ ok: valid.ok, error: "憑證錯誤" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "伺服器錯誤" });
+  }
+};
+
 const updateAccount = async (req, res) => {
   try {
     const token = req.headers.authorization;
@@ -79,4 +98,4 @@ const updateAccount = async (req, res) => {
   }
 };
 
-module.exports = { getAccount, addAccount, updateAccount };
+module.exports = { getAccount, addAccount, updateAccount, deleteAccount };
