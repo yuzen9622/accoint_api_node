@@ -87,8 +87,10 @@ const loginUser = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     let { name, email, password } = req.body;
+    if (!name || !email || !password)
+      return res.status(400).json({ error: "請輸入必填欄位!" });
     let user = await UserModel.findOne({ email: email });
-    if (user) return res.status(401).json({ error: "電子郵件已被使用" });
+    if (user) return res.status(400).json({ error: "電子郵件已被使用!" });
     const newUser = new UserModel({
       username: name,
       email,
@@ -99,7 +101,7 @@ const registerUser = async (req, res) => {
     await newUser.save();
     const setting = await registerSetting(newUser._id);
     const token = createRefreshToken(newUser._id);
-    if (!setting) return res.status(500).json({ error: "設定失敗" });
+    if (!setting) return res.status(500).json({ error: "設定失敗!" });
     return res.status(200).json({
       _id: newUser._id,
       name: newUser.username,
@@ -108,7 +110,7 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error: error });
+    return res.status(500).json({ error: "伺服器錯誤" });
   }
 };
 
