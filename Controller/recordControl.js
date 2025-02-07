@@ -33,7 +33,7 @@ const addRecord = async (req, res) => {
       }
 
       if (_id && source !== "change") {
-        const record = await RecordModel.findById(_id);
+        const record = await RecordModel.findById({ _id });
         const oldAccount = await AccountModel.findById({
           _id: record.accountId,
         });
@@ -63,6 +63,8 @@ const addRecord = async (req, res) => {
       }
 
       if (_id && source === "change") {
+        if (!toAccountId)
+          return res.status(400).json({ error: "請確認必填欄位都有資料" });
         const record = await RecordModel.findById({ _id });
         const oldAccount = await AccountModel.findById({
           _id: record.accountId,
@@ -84,6 +86,7 @@ const addRecord = async (req, res) => {
         await oldAccount.save();
 
         const newAccount = await AccountModel.findById({ _id: accountId });
+
         const newToAccount = await AccountModel.findById({ _id: toAccountId });
         newAccount.amount -= parseFloat(amount);
         newToAccount.amount += parseFloat(amount);

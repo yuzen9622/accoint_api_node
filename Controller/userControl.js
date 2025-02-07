@@ -161,6 +161,8 @@ const updateTheme = async (req, res) => {
       user.theme = theme;
       await user.save();
       return res.status(200).json({ ok: valid.ok });
+    } else {
+      return res.status(400).json({ ok: valid.ok, error: "憑證錯誤" });
     }
   } catch (error) {
     return res.status(500).json({ error: "伺服器錯誤" });
