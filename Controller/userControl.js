@@ -23,8 +23,9 @@ const registerSetting = async (_id) => {
       { categoriesType: "服飾", userId: _id, source: "expense" },
       { categoriesType: "汽車", userId: _id, source: "expense" },
       { categoriesType: "娛樂", userId: _id, source: "expense" },
+      { categoriesType: "罰款", userId: _id, source: "expense" },
       { categoriesType: "美容美髮", userId: _id, source: "expense" },
-      { categoriesType: "交計應酬", userId: _id, source: "expense" },
+      { categoriesType: "交際應酬", userId: _id, source: "expense" },
       { categoriesType: "學習深造", userId: _id, source: "expense" },
       { categoriesType: "保險", userId: _id, source: "expense" },
       { categoriesType: "稅金", userId: _id, source: "expense" },
@@ -32,7 +33,7 @@ const registerSetting = async (_id) => {
       { categoriesType: "教育", userId: _id, source: "expense" },
       { categoriesType: "校正回歸", userId: _id, source: "expense" },
       { categoriesType: "轉帳手續費", userId: _id, source: "expense" },
-      { categoriesType: "工資", userId: _id, source: "income" },
+      { categoriesType: "新資", userId: _id, source: "income" },
       { categoriesType: "獎金", userId: _id, source: "income" },
       { categoriesType: "投資", userId: _id, source: "income" },
       { categoriesType: "副業", userId: _id, source: "income" },
@@ -46,6 +47,7 @@ const registerSetting = async (_id) => {
       { accountsType: "銀行", userId: _id },
       { accountsType: "信用卡", userId: _id },
       { accountsType: "悠遊卡", userId: _id },
+      { accountsType: "行動支付", userId: _id },
     ];
     await CategoryModel.insertMany(categories);
     await AccountModel.insertMany(accounts);
@@ -75,6 +77,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.username,
         email: user.email,
+        theme: user.theme,
         token,
       });
     }
@@ -106,6 +109,7 @@ const registerUser = async (req, res) => {
       _id: newUser._id,
       name: newUser.username,
       email: newUser.email,
+
       token,
     });
   } catch (error) {
@@ -147,7 +151,22 @@ const updateUser = async (req, res) => {
     return res.status(500).json({ error: "伺服器錯誤" });
   }
 };
-
+const updateTheme = async (req, res) => {
+  const theme = req.body;
+  try {
+    const token = req.headers.authorization;
+    const valid = validUserToken(token);
+    if (valid.ok) {
+      const user = await UserModel.findById({ _id: valid._id });
+      user.theme = theme;
+      await user.save();
+      return res.status(200).json({ ok: valid.ok });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: "伺服器錯誤" });
+    s;
+  }
+};
 const destoryUser = async (req, res) => {
   const { _id } = req.body;
 
@@ -190,4 +209,5 @@ module.exports = {
   registerSetting,
   updateUser,
   destoryUser,
+  updateTheme,
 };

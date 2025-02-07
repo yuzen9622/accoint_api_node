@@ -14,6 +14,9 @@ const userSchema = new Schema(
       minlength: 7,
       maxlength: 100,
     },
+    theme: {
+      type: Object,
+    },
   },
   {
     timestamps: true,

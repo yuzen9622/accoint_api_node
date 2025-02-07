@@ -56,7 +56,7 @@ const addRecord = async (req, res) => {
           amount,
           description,
           date,
-          toAccountId,
+          toAccountId: null,
           source,
         });
         return res.status(200).json({ ok: valid.ok, message: "修改成功" });
