@@ -1,5 +1,6 @@
 const RecordModel = require("../Model/recordModel");
 const AccountModel = require("../Model/accountModel");
+const moment = require("moment-timezone");
 const { validUserToken } = require("../jwt");
 
 const addRecord = async (req, res) => {
@@ -187,12 +188,15 @@ const getRecord = async (req, res) => {
           },
         }).sort({ createdAt: 1 });
       } else if (start && end) {
-        console.log(new Date(start), new Date(end));
+        console.log(
+          moment.tz(start, "YYYY-MM-DD", "Asia/Taipei").toDate(),
+          moment.tz(end, "YYYY-MM-DD", "Asia/Taipei").toDate()
+        );
         records = await RecordModel.find({
           userId,
           date: {
-            $gte: new Date(start),
-            $lte: new Date(end),
+            $gte: moment.tz(start, "YYYY-MM-DD", "Asia/Taipei").toDate(),
+            $lte: moment.tz(end, "YYYY-MM-DD", "Asia/Taipei").toDate(),
           },
         }).sort({ date: 1 });
       } else {
