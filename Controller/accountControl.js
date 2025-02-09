@@ -40,7 +40,7 @@ const addAccount = async (req, res) => {
       let account = new AccountModel({
         userId: userId,
         accountsType: type,
-        amount: amount || 0,
+        initalAmount: amount || 0,
       });
       await account.save();
 
@@ -81,9 +81,9 @@ const updateAccount = async (req, res) => {
     if (!amount || !type)
       return res.status(400).json({ error: "請輸入必填欄位" });
     if (valid.ok) {
-      let oldAccount = await AccountModel.findOne({ accountsType: type });
+      let oldAccount = await AccountModel.findOne({ _id, accountsType: type });
 
-      if (oldAccount && oldAccount?._id.toString() !== _id) {
+      if (oldAccount) {
         return res.status(400).json({ error: "名稱已被使用" });
       }
       const account = await AccountModel.findById({ _id });
