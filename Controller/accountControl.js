@@ -83,7 +83,7 @@ const updateAccount = async (req, res) => {
     if (valid.ok) {
       let oldAccount = await AccountModel.findOne({ _id, accountsType: type });
 
-      if (oldAccount) {
+      if (!oldAccount) {
         return res.status(400).json({ error: "名稱已被使用" });
       }
       const account = await AccountModel.findById({ _id });
