@@ -187,12 +187,12 @@ const getRecord = async (req, res) => {
           },
         }).sort({ createdAt: 1 });
       } else if (start && end) {
-        console.log(new Date(start).toISOString(), new Date(end).toISOString());
+        console.log(new Date(start), new Date(end));
         records = await RecordModel.find({
           userId,
           date: {
-            $gte: new Date(start).toISOString(),
-            $lte: new Date(end).toISOString(),
+            $gte: new Date(start),
+            $lte: new Date(end),
           },
         }).sort({ date: 1 });
       } else {
