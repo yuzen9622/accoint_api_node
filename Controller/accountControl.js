@@ -40,7 +40,7 @@ const addAccount = async (req, res) => {
       let account = new AccountModel({
         userId: userId,
         accountsType: type,
-        initalAmount: amount || 0,
+        initialAmount: amount || 0,
       });
       await account.save();
 
@@ -87,7 +87,7 @@ const updateAccount = async (req, res) => {
         return res.status(400).json({ error: "名稱已被使用" });
       }
       const account = await AccountModel.findById({ _id });
-      account.initalAmount = parseFloat(amount);
+      account.initialAmount = parseFloat(amount);
       await account.save();
       return res.status(200).json({ ok: valid.ok, account });
     } else {
