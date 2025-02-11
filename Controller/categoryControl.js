@@ -22,14 +22,14 @@ const getCategory = async (req, res) => {
 const addCategory = async (req, res) => {
   try {
     const token = req.headers.authorization;
-    const { userId, type, source } = req.body;
+    const { userId, categoriesType, source } = req.body;
     const valid = validUserToken(token);
-    if (!userId || !type || !source)
+    if (!userId || !categoriesType || !source)
       return res.status(400).json({ error: "請輸入必填選項選項" });
     if (valid.ok) {
       const category = await CategoryModel.findOne({
         userId,
-        categoriesType: type,
+        categoriesType,
       });
       if (category) {
         if (category.isDeleted) {
@@ -45,7 +45,7 @@ const addCategory = async (req, res) => {
 
       const newCategory = new CategoryModel({
         userId,
-        categoriesType: type,
+        categoriesType,
         source,
       });
       await newCategory.save();
@@ -83,12 +83,13 @@ const deleteCategory = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
-    const { _id, type, source } = req.body;
+    const { _id, categoriesType, source } = req.body;
     const token = req.headers.authorization;
     const valid = validUserToken(token);
     if (valid.ok) {
       const category = await CategoryModel.findById({ _id });
-      category.categoriesType = type;
+      category.categoriesType = categoriesType;
+      category.source = source;
       await category.save();
       if (category) {
         return res.status(200).json({ ok: valid.ok, category });

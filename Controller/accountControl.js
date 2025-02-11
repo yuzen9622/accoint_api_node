@@ -29,19 +29,26 @@ const addAccount = async (req, res) => {
   try {
     const token = req.headers.authorization;
     const valid = validUserToken(token);
-    const { userId, type, amount } = req.body;
+    const { userId, accountsType, initialAmount, autoDebit, autoDebitDay } =
+      req.body;
 
     if (valid.ok) {
+      if (accountsType === "" || initialAmount === "")
+        return res.status(400).json({ error: "請輸入必填欄位" });
       const accounts = await AccountModel.findOne({
         userId: userId,
-        accountsType: type,
+        accountsType,
       });
-      if (accounts) return res.status(400).json({ error: "類別已存在" });
+      if (accounts) return res.status(400).json({ error: "帳戶已存在" });
       let account = new AccountModel({
         userId: userId,
-        accountsType: type,
-        initialAmount: amount || 0,
+        accountsType,
+        initialAmount: initialAmount || 0,
+        amount: initialAmount,
+        autoDebit,
+        autoDebitDay,
       });
+
       await account.save();
 
       return res
@@ -62,7 +69,13 @@ const deleteAccount = async (req, res) => {
     const { _id } = req.params;
     if (!_id) return res.status(400).json({ error: "請提供id" });
     if (valid.ok) {
-      await RecordModel.deleteMany({ accountId: _id });
+      const changeRecord = await RecordModel.find({
+        $or: [{ accountId: _id }, { toAccountId: _id }],
+      });
+      changeRecord.forEach((item) => {});
+      await RecordModel.deleteMany({
+        $or: [{ accountId: _id }, { toAccountId: _id }],
+      });
       const account = await AccountModel.findByIdAndDelete({ _id });
       if (account) return res.status(200).json({ ok: valid.ok });
     } else {
@@ -77,17 +90,43 @@ const updateAccount = async (req, res) => {
   try {
     const token = req.headers.authorization;
     const valid = validUserToken(token);
-    const { _id, amount, type } = req.body;
-    if (!amount || !type)
+    const {
+      _id,
+      userId,
+      accountsType,
+      initialAmount,
+      autoDebit,
+      autoDebitDay,
+      toAccountId,
+    } = req.body;
+    if (accountsType === "" || initialAmount === "")
       return res.status(400).json({ error: "請輸入必填欄位" });
     if (valid.ok) {
-      let oldAccount = await AccountModel.findOne({ _id, accountsType: type });
+      let oldAccount = await AccountModel.findOne({
+        _id,
+      });
 
       if (!oldAccount) {
-        return res.status(400).json({ error: "名稱已被使用" });
+        return res.status(400).json({ error: "帳戶不存在" });
       }
       const account = await AccountModel.findById({ _id });
-      account.initialAmount = parseFloat(amount);
+      let amount = parseFloat(initialAmount) - account.initialAmount;
+      account.amount += amount;
+      account.initialAmount = parseFloat(initialAmount);
+      account.accountsType = accountsType;
+      if (
+        autoDebit &&
+        (!toAccountId ||
+          !autoDebitDay ||
+          toAccountId === "" ||
+          autoDebitDay === "")
+      ) {
+        return res.status(400).json({ error: "請輸入必填欄位" });
+      }
+
+      account.autoDebit = autoDebit;
+      account.autoDebitDay = autoDebitDay;
+      account.toAccountId = toAccountId;
       await account.save();
       return res.status(200).json({ ok: valid.ok, account });
     } else {
