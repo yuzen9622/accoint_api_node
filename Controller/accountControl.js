@@ -33,6 +33,9 @@ const addAccount = async (req, res) => {
       req.body;
 
     if (valid.ok) {
+      if (valid._id !== userId)
+        return res.status(400).json({ error: "Id錯誤 請重新登入" });
+
       if (accountsType === "" || initialAmount === "")
         return res.status(400).json({ error: "請輸入必填欄位" });
       const accounts = await AccountModel.findOne({

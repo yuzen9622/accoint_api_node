@@ -169,7 +169,8 @@ const updateRecord = async (req, res) => {
     if (!valid.ok) {
       return res.status(400).json({ ok: valid.ok, error: valid.error });
     }
-
+    if (valid._id !== userId)
+      return res.status(400).json({ error: "Id錯誤 請重新登入" });
     // 檢查必填欄位
     if (
       !_id ||
@@ -270,7 +271,8 @@ const addRecord = async (req, res) => {
     if (!valid.ok) {
       return res.status(400).json({ ok: valid.ok, error: valid.error });
     }
-
+    if (valid._id !== userId)
+      return res.status(400).json({ error: "Id錯誤 請重新登入" });
     if (
       !userId ||
       !categoryId ||

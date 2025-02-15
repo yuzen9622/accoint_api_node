@@ -24,9 +24,12 @@ const addCategory = async (req, res) => {
     const token = req.headers.authorization;
     const { userId, categoriesType, source } = req.body;
     const valid = validUserToken(token);
+
     if (!userId || !categoriesType || !source)
       return res.status(400).json({ error: "請輸入必填選項選項" });
     if (valid.ok) {
+      if (valid._id !== userId)
+        return res.status(400).json({ error: "Id錯誤 請重新登入" });
       const category = await CategoryModel.findOne({
         userId,
         categoriesType,
