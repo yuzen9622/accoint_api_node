@@ -10,6 +10,8 @@ const accountSchema = new Schema(
     toAccountId: { type: String, default: null },
     autoDebit: { type: Boolean, default: false },
     autoDebitDay: { type: Number, min: 1, max: 31, default: null },
+    autoDebitRun: { type: Boolean, default: false },
+    lastAutoDebitTime: { type: Date },
   },
   {
     timestamps: true,
