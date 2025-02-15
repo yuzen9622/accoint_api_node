@@ -7,7 +7,7 @@ module.exports = async function (req, res) {
   const autoDebitAccount = await AccountModel.find({
     autoDebit: true,
   });
-  if (autoDebitAccount.length === 0) return;
+  if (autoDebitAccount.length === 0) return res.json("結束自動記帳");
 
   for (let account of autoDebitAccount) {
     if (account.autoDebitRun) {

@@ -5,6 +5,7 @@ const userRoute = require("./Router/userRoute");
 const accountRoute = require("./Router/accountRoute");
 const recordRoute = require("./Router/recordRoute");
 const categortyRoute = require("./Router/categoryRoute");
+const autoDebitJobs = require("./api/accountCron");
 require("dotenv").config();
 
 const app = express();
@@ -15,6 +16,7 @@ app.use("/users", userRoute);
 app.use("/accounts", accountRoute);
 app.use("/categories", categortyRoute);
 app.use("/records", recordRoute);
+app.get("/api/accountCron", autoDebitJobs);
 
 let port = process.env.PORT || 5000;
 app.listen(port, () => {
