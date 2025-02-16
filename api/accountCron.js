@@ -1,4 +1,5 @@
 const AccountModel = require("../Model/accountModel");
+const CategoryModel = require("../Model/categoryModel");
 const RecordModel = require("../Model/recordModel");
 const mongoose = require("mongoose");
 module.exports = async function (req, res) {
@@ -23,12 +24,16 @@ module.exports = async function (req, res) {
           await account.save();
         }
       }
+
       if (account.autoDebitDay === now.getDate() && account.amount < 0) {
         const record = new RecordModel({
+          userId: account.userId,
           accountId: account.toAccountId,
           toAccountId: account._id,
           amount: Math.abs(account.amount),
+          description: "自動扣款",
           source: "change",
+          date: `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`,
         });
         account.amount = 0;
         account.autoDebitRun = true;

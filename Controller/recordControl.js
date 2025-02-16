@@ -207,19 +207,28 @@ const updateRecord = async (req, res) => {
       } else {
         newAccount.amount = oldAccount.amount - parseFloat(amount);
       }
+      if (record.toAccountId) {
+        const toAccount = await AccountModel.findById({
+          _id: record.toAccountId,
+        });
+        toAccount.amount -= record.amount;
+        await toAccount.save();
+      }
+
       await newAccount.save();
     } else {
-      if (!toAccountId) {
+      if (!toAccountId)
         return res.status(400).json({ error: "請確認必填欄位都有資料" });
-      }
+      const record = await RecordModel.findById({ _id });
+      const oldAccount = await AccountModel.findById({
+        _id: record.accountId,
+      });
 
       if (record.source === "income") {
         oldAccount.amount -= parseFloat(record.amount);
       } else {
         oldAccount.amount += parseFloat(record.amount);
       }
-      await oldAccount.save();
-
       if (record.toAccountId) {
         const oldToAccount = await AccountModel.findById({
           _id: record.toAccountId,
@@ -228,8 +237,12 @@ const updateRecord = async (req, res) => {
         await oldToAccount.save();
       }
 
-      newAccount.amount -= parseFloat(amount);
+      await oldAccount.save();
+
+      const newAccount = await AccountModel.findById({ _id: accountId });
+
       const newToAccount = await AccountModel.findById({ _id: toAccountId });
+      newAccount.amount -= parseFloat(amount);
       newToAccount.amount += parseFloat(amount);
       await newAccount.save();
       await newToAccount.save();
