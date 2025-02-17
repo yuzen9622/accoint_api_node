@@ -3,7 +3,6 @@ const CategoryModel = require("../Model/categoryModel");
 const RecordModel = require("../Model/recordModel");
 const mongoose = require("mongoose");
 module.exports = async function (req, res) {
-  console.log("連接資料庫中...");
   try {
     const uri = process.env.MONGOOSE_URI;
     await mongoose.connect(uri, {
@@ -44,7 +43,7 @@ module.exports = async function (req, res) {
         );
       }
     }
-    
+
     console.log("自動記帳處理完畢!");
     return res.json("結束自動記帳");
   } catch (error) {
