@@ -44,7 +44,9 @@ module.exports = async function (req, res) {
         );
       }
     }
+    
     console.log("自動記帳處理完畢!");
+    return res.json("結束自動記帳");
   } catch (error) {
     console.log(error);
   }
