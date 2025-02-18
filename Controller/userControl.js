@@ -1,6 +1,8 @@
 const UserModel = require("../Model/userModel");
 const CategoryModel = require("../Model/categoryModel");
 const AccountModel = require("../Model/accountModel");
+const axios = require("axios");
+const { OAuth2Client } = require("google-auth-library");
 const bcrypt = require("bcryptjs");
 const {
   createRefreshToken,
@@ -55,6 +57,66 @@ const registerSetting = async (_id) => {
   } catch (error) {
     console.log(error);
     throw new Error(error);
+  }
+};
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const googleLoginUser = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    const tokenResponse = await axios.post(
+      "https://oauth2.googleapis.com/token",
+      {
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: process.env.CLIENT_URL || "http://localhost:3000",
+        grant_type: "authorization_code",
+      }
+    );
+
+    const { id_token } = tokenResponse.data;
+    const ticket = await client.verifyIdToken({
+      idToken: id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub } = payload;
+    const user = await UserModel.findOne({
+      $or: [{ googleId: sub }, { email: email }],
+    });
+
+    if (!user) {
+      let newUser = new UserModel({
+        googleId: sub,
+        username: name,
+        email: email,
+      });
+      await newUser.save();
+      const token = createRefreshToken(newUser._id);
+      await registerSetting(newUser._id);
+      return res.json({
+        _id: newUser._id,
+        googleId: newUser.googleId,
+        email: newUser.email,
+        token,
+        name: newUser.username,
+      });
+    }
+    const token = createRefreshToken(user._id);
+    return res.json({
+      _id: user._id,
+      googleId: user?.googleId,
+      email: user.email,
+      token,
+      name: user.username,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "Invalid Google token" });
   }
 };
 
@@ -212,4 +274,5 @@ module.exports = {
   updateUser,
   destoryUser,
   updateTheme,
+  googleLoginUser,
 };
