@@ -1,7 +1,7 @@
 const RecordModel = require("../Model/recordModel");
 const AccountModel = require("../Model/accountModel");
 const moment = require("moment-timezone");
-const { validUserToken } = require("../jwt");
+const { validUserToken } = require("../config/jwt");
 
 // const addRecord = async (req, res) => {
 //   try {

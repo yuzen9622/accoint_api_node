@@ -1,5 +1,5 @@
 const CategoryModel = require("../Model/categoryModel");
-const { validUserToken } = require("../jwt");
+const { validUserToken } = require("../config/jwt");
 
 const getCategory = async (req, res) => {
   try {

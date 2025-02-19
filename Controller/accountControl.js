@@ -1,6 +1,6 @@
 const AccountModel = require("../Model/accountModel");
 const RecordModel = require("../Model/recordModel");
-const { validUserToken } = require("../jwt");
+const { validUserToken } = require("../config/jwt");
 
 const getAccount = async (req, res) => {
   try {

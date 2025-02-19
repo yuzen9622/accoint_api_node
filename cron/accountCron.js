@@ -1,5 +1,4 @@
 const AccountModel = require("../Model/accountModel");
-const CategoryModel = require("../Model/categoryModel");
 const RecordModel = require("../Model/recordModel");
 const mongoose = require("mongoose");
 module.exports = async function (req, res) {

@@ -9,7 +9,7 @@ const {
   validRefreshToken,
   createUserToken,
   validUserToken,
-} = require("../jwt");
+} = require("../config/jwt");
 const RecordModel = require("../Model/recordModel");
 
 const registerSetting = async (_id) => {
@@ -105,8 +105,12 @@ const googleLoginUser = async (req, res) => {
         token,
         name: newUser.username,
       });
+    } else if (!user.googleId) {
+      user.googleId = sub;
+      await user.save();
     }
     const token = createRefreshToken(user._id);
+
     return res.json({
       _id: user._id,
       googleId: user?.googleId,
